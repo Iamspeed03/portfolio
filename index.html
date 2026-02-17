@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akshit Madathil | Portfolio</title>
+    <style>
+        /* --- System & Variables --- */
+        :root {
+            --bg-main: #000000;
+            --text-primary: #f5f5f7;
+            --text-secondary: #86868b;
+            --accent-blue: #2997ff;
+            --accent-green: #34c759;
+            --accent-indigo: #5e5ce6;
+            --accent-pink: #ff2d55;
+            --ease-apple: cubic-bezier(0.25, 0.1, 0.25, 1.0);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.5;
+            overflow-x: hidden; 
+        }
+
+        /* --- View Container Management --- */
+        #home-view {
+            transition: transform 0.6s var(--ease-apple), opacity 0.6s var(--ease-apple);
+            transform-origin: center top;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        .is-hidden {
+            transform: scale(0.92) translateY(-20px);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #project-view {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            background: var(--bg-main); z-index: 200; overflow-y: auto;
+            opacity: 0; pointer-events: none;
+            transform: translateY(100px); 
+            transition: transform 0.6s var(--ease-apple), opacity 0.6s var(--ease-apple);
+        }
+
+        #project-view.is-active {
+            opacity: 1; pointer-events: auto; transform: translateY(0);
+        }
+
+        /* --- Shared Styles --- */
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+        h1, h2, h3, h4 { font-weight: 600; letter-spacing: -0.02em; }
+        
+        /* Navbar */
+        nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px; position: fixed; width: 100%; top: 0; z-index: 100;
+            background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .nav-logo { font-weight: 600; letter-spacing: -0.5px; }
+        .nav-links a { color: var(--text-secondary); text-decoration: none; margin-left: 25px; font-size: 0.9rem; transition: color 0.3s; }
+        .nav-links a:hover { color: var(--text-primary); }
+
+        /* Hero */
+        #hero { min-height: 90vh; display: flex; align-items: center; justify-content: center; text-align: center; position: relative; }
+        h1.hero-title {
+            font-size: clamp(3rem, 8vw, 7rem); line-height: 1.05;
+            background: linear-gradient(135deg, var(--text-primary) 30%, var(--text-secondary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .aurora-bg {
+            position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle at center, rgba(41, 151, 255, 0.15) 0%, rgba(191, 90, 242, 0.1) 25%, rgba(0,0,0,0) 60%);
+            filter: blur(80px); animation: rotate 25s linear infinite; z-index: -1; opacity: 0.7;
+        }
+        @keyframes rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Bento Grid */
+        .bento-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 25px; margin-top: 50px; padding-bottom: 50px; }
+        .bento-card {
+            background: #121212; border-radius: 30px; position: relative; overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05); cursor: pointer;
+            transition: transform 0.4s var(--ease-apple), box-shadow 0.4s var(--ease-apple);
+            display: flex; flex-direction: column; justify-content: flex-end;
+        }
+        .bento-card:hover { transform: scale(1.02); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        
+        /* Grid Spans */
+        .bento-featured { grid-column: span 12; min-height: 500px; }
+        .bento-half { grid-column: span 6; min-height: 400px; }
+        .bento-third { grid-column: span 4; min-height: 400px; } 
+        
+        .project-content { position: relative; z-index: 2; padding: 30px; pointer-events: none; }
+        .project-title { font-size: 2rem; margin-bottom: 10px; line-height: 1.1; }
+        .project-desc { color: var(--text-secondary); font-size: 1rem; }
+        
+        /* Visuals */
+        .card-visual { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; opacity: 0.3; transition: opacity 0.5s; }
+        .bento-card:hover .card-visual { opacity: 0.5; }
+        
+        /* Gradients */
+        .vis-lightyear { background: linear-gradient(45deg, var(--accent-blue), transparent); }
+        .vis-agri { background: linear-gradient(to top right, var(--accent-green), transparent); }
+        .vis-lan { background: linear-gradient(to top left, var(--accent-indigo), transparent); }
+        .vis-nft { background: linear-gradient(to bottom right, var(--accent-pink), transparent); }
+
+        /* Skills */
+        #skills { padding: 100px 0; }
+        .skills-container { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 40px; }
+        .skill-pill {
+            background: rgba(255,255,255,0.1); padding: 12px 24px; border-radius: 100px;
+            font-weight: 500; font-size: 1.1rem; border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s ease; cursor: default;
+        }
+        .skill-pill:hover { background: var(--text-primary); color: var(--bg-main); }
+
+        /* Footer */
+        footer { background: #0a0a0a; padding: 100px 0; text-align: center; border-top: 1px solid rgba(255,255,255,0.05); }
+        .contact-links { display: flex; justify-content: center; gap: 30px; margin-top: 40px; font-size: 1.2rem; }
+        .contact-links a { color: var(--accent-blue); text-decoration: none; }
+        .contact-links a:hover { text-decoration: underline; }
+
+        /* --- PROJECT VIEW STYLES --- */
+        .pv-container { max-width: 900px; margin: 120px auto 100px auto; padding: 0 20px; }
+        .pv-close {
+            position: fixed; top: 30px; right: 30px; z-index: 300;
+            background: rgba(255,255,255,0.1); border: none; color: white;
+            width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+            font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(10px); transition: background 0.3s;
+        }
+        .pv-close:hover { background: rgba(255,255,255,0.2); }
+        
+        .pv-header { margin-bottom: 60px; }
+        .pv-eyebrow { color: var(--accent-blue); font-weight: 600; text-transform: uppercase; display: block; margin-bottom: 10px; }
+        .pv-title { font-size: 3.5rem; line-height: 1.1; margin-bottom: 20px; }
+        .pv-intro { font-size: 1.3rem; color: var(--text-secondary); max-width: 800px; }
+        
+        .pv-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 60px; margin-top: 50px; }
+        .pv-meta-label { color: var(--text-secondary); font-size: 0.9rem; font-weight: 600; text-transform: uppercase; margin-bottom: 5px; }
+        .pv-meta-val { margin-bottom: 25px; font-size: 1.1rem; line-height: 1.4; }
+        
+        .pv-body p { margin-bottom: 20px; font-size: 1.15rem; color: #d1d1d6; }
+        .pv-body h3 { font-size: 1.6rem; margin: 40px 0 15px 0; color: white; }
+        .pv-body h4 { font-size: 1.2rem; margin: 25px 0 10px 0; color: var(--accent-blue); }
+        
+        /* Styled Lists in Modal */
+        .pv-body ul { list-style: none; margin-bottom: 30px; }
+        .pv-body li { position: relative; padding-left: 20px; margin-bottom: 10px; color: #d1d1d6; font-size: 1.1rem; }
+        .pv-body li::before { content: "•"; color: var(--accent-blue); position: absolute; left: 0; font-weight: bold; }
+
+        @media (max-width: 900px) {
+            .bento-third { grid-column: span 6; }
+            .bento-featured { grid-column: span 12; min-height: 400px; }
+        }
+        @media (max-width: 600px) {
+            .bento-third, .bento-half { grid-column: span 12; }
+            .pv-grid { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+            .pv-title { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <main id="home-view">
+        <nav>
+            <div class="container" style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                <div class="nav-logo">AM.</div>
+                <div class="nav-links">
+                    <a href="#projects">Work</a>
+                    <a href="#skills">Skills</a>
+                    <a href="mailto:akshit_madathil@icloud.com">Contact</a>
+                </div>
+            </div>
+        </nav>
+
+        <section id="hero">
+            <div class="aurora-bg"></div>
+            <div class="container">
+                <h1 class="hero-title">Akshit Madathil.</h1>
+                <p style="font-size: 1.5rem; color: var(--text-secondary); margin-top: 20px;">
+                    I like building things.
+                </p>
+            </div>
+        </section>
+
+        <section id="projects">
+            <div class="container">
+                <h2 style="font-size: 2.5rem; margin-bottom: 40px;">Selected Work.</h2>
+                <div class="bento-grid">
+                    
+                    <div class="bento-card bento-featured" onclick="openProject('lightyear')">
+                        <div class="card-visual vis-lightyear"></div>
+                        <div class="project-content">
+                            <div style="color: var(--accent-blue); font-weight: 600; text-transform: uppercase; margin-bottom: 10px;">DeFi Aggregator</div>
+                            <h3 class="project-title">Lightyear</h3>
+                            <p class="project-desc">Architecting a decentralized finance aggregator tailored for high-volume.</p>
+                        </div>
+                    </div>
+
+                    <div class="bento-card bento-third" onclick="openProject('agri')">
+                        <div class="card-visual vis-agri"></div>
+                        <div class="project-content">
+                            <div style="color: var(--accent-green); font-weight: 600; text-transform: uppercase; margin-bottom: 10px;">Hyperledger</div>
+                            <h3 class="project-title">Agri-Supply</h3>
+                            <p class="project-desc">Farm-to-consumer tracking with immutable logs.</p>
+                        </div>
+                    </div>
+
+                    <div class="bento-card bento-third" onclick="openProject('trademark')">
+                        <div class="card-visual vis-nft"></div>
+                        <div class="project-content">
+                            <div style="color: var(--accent-pink); font-weight: 600; text-transform: uppercase; margin-bottom: 10px;">NFT Registry</div>
+                            <h3 class="project-title">Trademark</h3>
+                            <p class="project-desc">On-chain IP registration using ERC-721 tokens.</p>
+                        </div>
+                    </div>
+
+                    <div class="bento-card bento-third" onclick="openProject('lan')">
+                        <div class="card-visual vis-lan"></div>
+                        <div class="project-content">
+                            <div style="color: var(--accent-indigo); font-weight: 600; text-transform: uppercase; margin-bottom: 10px;">Systems</div>
+                            <h3 class="project-title">Secure Chat</h3>
+                            <p class="project-desc">C & Python encrypted P2P communication.</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <section id="skills">
+            <div class="container">
+                 <h2 style="font-size: 2.5rem;">Expertise.</h2>
+                 <div class="skills-container">
+                     <span class="skill-pill">Go (Fiber)</span>
+                     <span class="skill-pill">Next.js 15</span>
+                     <span class="skill-pill">TypeScript</span>
+                     <span class="skill-pill">Solidity</span>
+                     <span class="skill-pill">C / C++</span>
+                     <span class="skill-pill">Python</span>
+                     <span class="skill-pill" style="color: var(--accent-blue); border-color: var(--accent-blue);">Hyperledger Fabric</span>
+                     <span class="skill-pill">IPFS & NFTs</span>
+                     <span class="skill-pill">Helius RPC</span>
+                     <span class="skill-pill">Redis</span>
+                 </div>
+            </div>
+        </section>
+
+        <footer id="contact">
+            <div class="container">
+                <h2 style="font-size: 2.5rem; margin-bottom: 10px;">Let's Connect.</h2>
+                <p style="font-size: 1.2rem; color: var(--text-secondary);">Open for blockchain and systems engineering roles.</p>
+                <div class="contact-links">
+                    <a href="mailto:akshit_madathil@icloud.com">Email</a>
+                    <a href="tel:+919324614796">Phone</a>
+                    <a href="https://github.com/Iamspeed03" target="_blank">GitHub</a>
+                </div>
+                <p style="margin-top: 80px; color: var(--text-secondary); font-size: 0.9rem;">© 2026 Akshit Madathil.</p>
+            </div>
+        </footer>
+
+    </main>
+
+
+    <div id="project-view">
+        <button class="pv-close" onclick="closeProject()">✕</button>
+        
+        <div class="pv-container">
+            <header class="pv-header">
+                <span class="pv-eyebrow" id="detail-cat">Category</span>
+                <h1 class="pv-title" id="detail-title">Project Title</h1>
+                <p class="pv-intro" id="detail-intro">Description</p>
+            </header>
+            
+            <div style="width:100%; height: 1px; background: rgba(255,255,255,0.1);"></div>
+
+            <div class="pv-grid">
+                <aside>
+                    <div class="pv-meta-label">Role</div>
+                    <div class="pv-meta-val" id="detail-role">Developer</div>
+
+                    <div class="pv-meta-label">Timeline</div>
+                    <div class="pv-meta-val" id="detail-date">2025</div>
+
+                    <div class="pv-meta-label">Core Tech</div>
+                    <div class="pv-meta-val" id="detail-tech">Tech</div>
+                </aside>
+                <article class="pv-body" id="detail-body">
+                    </article>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        const projectData = {
+            "lightyear": {
+                cat: "DeFi Aggregator",
+                title: "Lightyear",
+                intro: "A decentralized finance aggregator tailored for the Indian market, aiming to unify fragmented liquidity with high-frequency performance.",
+                role: "Founder & Lead Architect",
+                date: "Dec 2025 - Present",
+                tech: "Go (Fiber), Next.js 15, Helius RPC, Redis",
+                body: `
+                    <h3>The Problem: Liquidity Fragmentation</h3>
+                    <p>On decentralized networks like Solana, liquidity is split across dozens of isolated pools (Raydium, Orca, Meteora). This means that executing large orders on a single pool results in significant <strong>Price Impact</strong> (slippage), effectively penalizing the user for trading.</p>
+
+                    <h3>The Solution: Smart Algorithmic Routing</h3>
+                    <p>Lightyear functions as an <strong>Atomic Smart Router</strong>. Instead of routing a trade through a single venue, our engine performs the following in milliseconds:</p>
+                    
+                    <ul>
+                        <li><strong>Scans</strong> the entire liquidity landscape across all major Solana protocols.</li>
+                        <li><strong>Splits</strong> the order into mathematically optimal chunks.</li>
+                        <li><strong>Routes</strong> these chunks through different pools simultaneously.</li>
+                        <li><strong>Executes</strong> the trade atomically, ensuring the user receives the maximum possible output with minimal slippage.</li>
+                    </ul>
+
+                    <div style="width:100%; height:1px; background:rgba(255,255,255,0.1); margin: 40px 0;"></div>
+
+                    <h3>Architecture & Tech Stack</h3>
+                    
+                    <h4>1. The Interface</h4>
+                    <p>Built mobile-first using <strong>Next.js 15</strong> and <strong>TypeScript</strong>. We use <strong>Tailwind CSS</strong> and <strong>Shadcn/UI</strong> for premium design, while <strong>Zustand</strong> handles high-velocity state changes.</p>
+                    
+                    <h4>2. The Engine</h4>
+                    <p>A high-concurrency <strong>Go (Golang)</strong> backend utilizing <strong>Fiber</strong>. Real-time pricing is streamed via <strong>Gorilla Websockets</strong> backed by <strong>Redis</strong>.</p>
+                    
+                    <h4>3. Infrastructure</h4>
+                    <p>Leveraging <strong>Helius RPC</strong> nodes for Solana connectivity and <strong>Jupiter Aggregator</strong> for routing logic. We integrate <strong>Privy</strong> to create secure <strong>MPC (Multi-Party Computation) wallets</strong>, enabling seamless self-custody without complex seed phrases.</p>
+                `
+            },
+            "agri": {
+                cat: "Blockchain Supply Chain",
+                title: "Agri-Hyperledger",
+                intro: "Ensuring transparency and trust in the agricultural supply chain using immutable ledger technology.",
+                role: "Blockchain Developer",
+                date: "Aug - Sept 2025",
+                tech: "Hyperledger Fabric, Go, Docker, CouchDB",
+                body: `
+                    <h3>The Challenge</h3>
+                    <p>Trust is a major issue in agriculture. Consumers often don't know the origin of their produce, and farmers struggle with fair compensation.</p>
+                    <h3>The Solution</h3>
+                    <p>I built a permissioned blockchain using <strong>Hyperledger Fabric</strong>. Authorized participants record immutable data about produce, enforced by <strong>Go</strong> Smart Contracts.</p>
+                    <h3>Technical Highlights</h3>
+                    <p>• <strong>Private Data Collections:</strong> Keeps pricing data confidential.<br>
+                    • <strong>End-to-End Tracking:</strong> QR code verification for consumers.</p>
+                `
+            },
+            "trademark": {
+                cat: "NFT Registry",
+                title: "NFT Trademark System",
+                intro: "A decentralized registry proving intellectual property ownership using ERC-721 NFTs and IPFS.",
+                role: "Smart Contract Developer",
+                date: "July - Nov 2025",
+                tech: "Solidity, React.js, IPFS, Hardhat, Ethers.js",
+                body: `
+                    <h3>The Concept</h3>
+                    <p>Traditional trademark registration is slow and opaque. This project demonstrates how blockchain can provide an instant, immutable timestamp of Intellectual Property ownership.</p>
+                    
+                    <h3>Technical Architecture</h3>
+                    <p>The system utilizes <strong>IPFS</strong> (InterPlanetary File System) for decentralized storage of trademark assets. When a user uploads a logo, its cryptographic hash is minted as a unique <strong>ERC-721 NFT</strong> on the blockchain.</p>
+                    
+                    <h3>Key Features</h3>
+                    <p>• <strong>Proof of Existence:</strong> The blockchain block time serves as undeniable proof of the "prior art" or creation date.<br>
+                    • <strong>Duplicate Prevention:</strong> The smart contract verifies image hashes before minting, preventing duplicate claims.<br>
+                    • <strong>Decentralized Storage:</strong> Assets are stored on IPFS, ensuring no single point of failure.</p>
+                `
+            },
+            "lan": {
+                cat: "Systems Programming",
+                title: "Secure LAN Chat",
+                intro: "A low-level, secure communication tool for Local Area Networks with built-in file sharing.",
+                role: "Systems Programmer",
+                date: "Sept - Oct 2025",
+                tech: "C, Python, Sockets, Cryptography",
+                body: `
+                    <h3>The Challenge</h3>
+                    <p>I wanted to understand the fundamentals of networking by building a serverless, peer-to-peer communication tool from scratch using low-level sockets.</p>
+                    <h3>The Solution</h3>
+                    <p>Combines a <strong>C-based backend</strong> for high-performance socket handling with a <strong>Python GUI</strong>. It supports concurrent users via multithreading.</p>
+                    <h3>Key Capabilities</h3>
+                    <p>• <strong>Remote Command Execution:</strong> Admin users can execute shell commands securely.<br>
+                    • <strong>Encryption:</strong> Custom implementation of end-to-end encryption.</p>
+                `
+            }
+        };
+
+        const homeView = document.getElementById('home-view');
+        const projectView = document.getElementById('project-view');
+
+        function openProject(id) {
+            const data = projectData[id];
+            if(!data) return;
+
+            document.getElementById('detail-cat').textContent = data.cat;
+            document.getElementById('detail-title').textContent = data.title;
+            document.getElementById('detail-intro').textContent = data.intro;
+            document.getElementById('detail-role').textContent = data.role;
+            document.getElementById('detail-date').textContent = data.date;
+            document.getElementById('detail-tech').textContent = data.tech;
+            document.getElementById('detail-body').innerHTML = data.body;
+
+            homeView.classList.add('is-hidden');
+            projectView.classList.add('is-active');
+            projectView.scrollTop = 0;
+        }
+
+        function closeProject() {
+            homeView.classList.remove('is-hidden');
+            projectView.classList.remove('is-active');
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape") { closeProject(); }
+        });
+    </script>
+</body>
+</html>
